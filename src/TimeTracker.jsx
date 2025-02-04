@@ -1,42 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, Plus, Save, Clock, Trash2, Filter, Calendar } from 'lucide-react';
-import { CalendarPopup } from "./components/ui/calendar-popup";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { CalendarPopup } from "./components/ui/calendar-popup";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 
 const TimeTracker = () => {
   const [tasks, setTasks] = useState(() => {
-    // Load tasks from localStorage on initial render
     const savedTasks = localStorage.getItem('tasks');
     return savedTasks ? JSON.parse(savedTasks).map(task => ({
       ...task,
-      date: new Date(task.date) // Convert date strings back to Date objects
+      date: new Date(task.date)
     })) : [];
   });
+  
   const [activeTask, setActiveTask] = useState(null);
   const [timer, setTimer] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [newTask, setNewTask] = useState({
     title: '',
     category: 'sap-ewm',
@@ -50,7 +50,6 @@ const TimeTracker = () => {
     endTime: '',
   });
 
-  // Categories and other constants remain the same...
   const categories = {
     'sap-ewm': 'SAP EWM Implementation & Support',
     'sap-integration': 'SAP Integration Services',
@@ -84,7 +83,6 @@ const TimeTracker = () => {
     'deployment': 'Deployment'
   };
 
-  // Timer effect remains the same...
   useEffect(() => {
     let interval;
     if (isRunning && activeTask !== null) {
@@ -94,6 +92,10 @@ const TimeTracker = () => {
     }
     return () => clearInterval(interval);
   }, [isRunning, activeTask]);
+
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
 
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
@@ -110,7 +112,11 @@ const TimeTracker = () => {
     });
   };
 
-  // Task management functions remain the same...
+  const handleDateSelect = (date) => {
+    setNewTask({...newTask, date});
+    setIsDatePickerOpen(false);
+  };
+
   const handleStartStop = (taskId) => {
     if (activeTask === taskId) {
       setIsRunning(!isRunning);
@@ -121,10 +127,17 @@ const TimeTracker = () => {
     }
   };
 
-  // Save tasks to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-  }, [tasks]);
+  const calculateDuration = (startTime, endTime) => {
+    const [startHours, startMinutes] = startTime.split(':').map(Number);
+    const [endHours, endMinutes] = endTime.split(':').map(Number);
+    
+    let durationMinutes = (endHours * 60 + endMinutes) - (startHours * 60 + startMinutes);
+    if (durationMinutes < 0) durationMinutes += 24 * 60;
+    
+    const hours = Math.floor(durationMinutes / 60);
+    const minutes = durationMinutes % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  };
 
   const exportTasks = (format) => {
     const data = tasks.map(task => ({
@@ -133,8 +146,8 @@ const TimeTracker = () => {
       category: categories[task.category],
       system: systems[task.system],
       taskType: taskTypes[task.taskType],
-      duration: task.endTime && task.startTime ?
-        calculateDuration(task.startTime, task.endTime) :
+      duration: task.endTime && task.startTime ? 
+        calculateDuration(task.startTime, task.endTime) : 
         formatTime(task.timeSpent)
     }));
 
@@ -159,14 +172,14 @@ const TimeTracker = () => {
         task.taskType,
         task.project,
         task.ticketNumber,
-        task.description.replace(/,/g, ';') // Replace commas in description to avoid CSV issues
+        task.description.replace(/,/g, ';')
       ]);
-
+      
       const csvString = [
         headers.join(','),
         ...csvData.map(row => row.join(','))
       ].join('\n');
-
+      
       const blob = new Blob([csvString], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -176,28 +189,16 @@ const TimeTracker = () => {
     }
   };
 
-  const calculateDuration = (startTime, endTime) => {
-    const [startHours, startMinutes] = startTime.split(':').map(Number);
-    const [endHours, endMinutes] = endTime.split(':').map(Number);
-
-    let durationMinutes = (endHours * 60 + endMinutes) - (startHours * 60 + startMinutes);
-    if (durationMinutes < 0) durationMinutes += 24 * 60; // Handle overnight
-
-    const hours = Math.floor(durationMinutes / 60);
-    const minutes = durationMinutes % 60;
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-  };
-
   const handleAddTask = () => {
     if (newTask.title.trim() === '') return;
-
+    
     const task = {
       id: Date.now(),
       ...newTask,
       timeSpent: 0,
       created: new Date().toISOString(),
     };
-
+    
     setTasks([...tasks, task]);
     setNewTask({
       title: '',
@@ -223,9 +224,9 @@ const TimeTracker = () => {
 
   const handleSaveTime = () => {
     if (activeTask === null) return;
-
-    setTasks(tasks.map(task =>
-      task.id === activeTask
+    
+    setTasks(tasks.map(task => 
+      task.id === activeTask 
         ? { ...task, timeSpent: timer }
         : task
     ));
@@ -260,23 +261,24 @@ const TimeTracker = () => {
               <Input
                 placeholder="Task Title"
                 value={newTask.title}
-                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                onChange={(e) => setNewTask({...newTask, title: e.target.value})}
                 className="w-full"
               />
               <Input
                 placeholder="Ticket/CR Number"
                 value={newTask.ticketNumber}
-                onChange={(e) => setNewTask({ ...newTask, ticketNumber: e.target.value })}
+                onChange={(e) => setNewTask({...newTask, ticketNumber: e.target.value})}
                 className="w-full"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Popover>
+              <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className="w-full justify-start text-left font-normal"
+                    onClick={() => setIsDatePickerOpen(true)}
                   >
                     <Calendar className="mr-2 h-4 w-4" />
                     {newTask.date ? formatDate(newTask.date) : "Select date"}
@@ -286,7 +288,7 @@ const TimeTracker = () => {
                   <CalendarPopup
                     mode="single"
                     selected={newTask.date}
-                    onSelect={(date) => date && setNewTask({ ...newTask, date })}
+                    onSelect={handleDateSelect}
                     initialFocus
                   />
                 </PopoverContent>
@@ -296,7 +298,7 @@ const TimeTracker = () => {
                 type="time"
                 placeholder="Start Time"
                 value={newTask.startTime}
-                onChange={(e) => setNewTask({ ...newTask, startTime: e.target.value })}
+                onChange={(e) => setNewTask({...newTask, startTime: e.target.value})}
                 className="w-full"
               />
 
@@ -304,22 +306,22 @@ const TimeTracker = () => {
                 type="time"
                 placeholder="End Time"
                 value={newTask.endTime}
-                onChange={(e) => setNewTask({ ...newTask, endTime: e.target.value })}
+                onChange={(e) => setNewTask({...newTask, endTime: e.target.value})}
                 className="w-full"
               />
 
               <Input
                 placeholder="Project/Initiative"
                 value={newTask.project}
-                onChange={(e) => setNewTask({ ...newTask, project: e.target.value })}
+                onChange={(e) => setNewTask({...newTask, project: e.target.value})}
                 className="w-full"
               />
             </div>
-
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Select
                 value={newTask.category}
-                onValueChange={(value) => setNewTask({ ...newTask, category: value })}
+                onValueChange={(value) => setNewTask({...newTask, category: value})}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
@@ -335,7 +337,7 @@ const TimeTracker = () => {
 
               <Select
                 value={newTask.system}
-                onValueChange={(value) => setNewTask({ ...newTask, system: value })}
+                onValueChange={(value) => setNewTask({...newTask, system: value})}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select system" />
@@ -351,7 +353,7 @@ const TimeTracker = () => {
 
               <Select
                 value={newTask.taskType}
-                onValueChange={(value) => setNewTask({ ...newTask, taskType: value })}
+                onValueChange={(value) => setNewTask({...newTask, taskType: value})}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select task type" />
@@ -369,7 +371,7 @@ const TimeTracker = () => {
             <Textarea
               placeholder="Technical Description (Include: Changes, Impact, Testing Requirements)"
               value={newTask.description}
-              onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+              onChange={(e) => setNewTask({...newTask, description: e.target.value})}
               className="w-full h-24"
             />
 

@@ -6,8 +6,18 @@ export function CalendarPopup({
   className,
   classNames,
   showOutsideDays = true,
+  onSelect,
+  selected,
   ...props
 }) {
+  const today = new Date()
+
+  const handleSelect = (date) => {
+    if (onSelect) {
+      onSelect(date);
+    }
+  };
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -28,12 +38,15 @@ export function CalendarPopup({
         cell: "h-9 w-9 text-center text-sm relative",
         day: "h-9 w-9 p-0 font-normal hover:bg-gray-100 rounded-full",
         day_selected: "bg-blue-500 text-white hover:bg-blue-600",
-        day_today: "bg-gray-100",
+        day_today: "bg-yellow-100 font-bold",
         day_outside: "text-gray-400",
         day_disabled: "text-gray-400",
         day_hidden: "invisible",
         ...classNames,
       }}
+      selected={selected}
+      onSelect={handleSelect}
+      today={today}
       {...props}
     />
   )
