@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, Plus, Save, Clock, Trash2, Filter, Calendar } from 'lucide-react';
+import { CalendarPopup } from "./components/ui/calendar-popup";
 import {
   Card,
   CardContent,
@@ -121,82 +122,82 @@ const TimeTracker = () => {
   };
 
   // Save tasks to localStorage whenever they change
-useEffect(() => {
-  localStorage.setItem('tasks', JSON.stringify(tasks));
-}, [tasks]);
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
 
-const exportTasks = (format) => {
-  const data = tasks.map(task => ({
-    ...task,
-    date: new Date(task.date).toLocaleDateString(),
-    category: categories[task.category],
-    system: systems[task.system],
-    taskType: taskTypes[task.taskType],
-    duration: task.endTime && task.startTime ?
-      calculateDuration(task.startTime, task.endTime) :
-      formatTime(task.timeSpent)
-  }));
+  const exportTasks = (format) => {
+    const data = tasks.map(task => ({
+      ...task,
+      date: new Date(task.date).toLocaleDateString(),
+      category: categories[task.category],
+      system: systems[task.system],
+      taskType: taskTypes[task.taskType],
+      duration: task.endTime && task.startTime ?
+        calculateDuration(task.startTime, task.endTime) :
+        formatTime(task.timeSpent)
+    }));
 
-  if (format === 'json') {
-    const jsonString = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `tasks_export_${new Date().toISOString().split('T')[0]}.json`;
-    link.click();
-  } else if (format === 'csv') {
-    const headers = ['Title', 'Date', 'Start Time', 'End Time', 'Duration', 'Category', 'System', 'Task Type', 'Project', 'Ticket Number', 'Description'];
-    const csvData = data.map(task => [
-      task.title,
-      task.date,
-      task.startTime,
-      task.endTime,
-      task.duration,
-      task.category,
-      task.system,
-      task.taskType,
-      task.project,
-      task.ticketNumber,
-      task.description.replace(/,/g, ';') // Replace commas in description to avoid CSV issues
-    ]);
-   
-    const csvString = [
-      headers.join(','),
-      ...csvData.map(row => row.join(','))
-    ].join('\n');
-   
-    const blob = new Blob([csvString], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `tasks_export_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-  }
-};
+    if (format === 'json') {
+      const jsonString = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `tasks_export_${new Date().toISOString().split('T')[0]}.json`;
+      link.click();
+    } else if (format === 'csv') {
+      const headers = ['Title', 'Date', 'Start Time', 'End Time', 'Duration', 'Category', 'System', 'Task Type', 'Project', 'Ticket Number', 'Description'];
+      const csvData = data.map(task => [
+        task.title,
+        task.date,
+        task.startTime,
+        task.endTime,
+        task.duration,
+        task.category,
+        task.system,
+        task.taskType,
+        task.project,
+        task.ticketNumber,
+        task.description.replace(/,/g, ';') // Replace commas in description to avoid CSV issues
+      ]);
 
-const calculateDuration = (startTime, endTime) => {
-  const [startHours, startMinutes] = startTime.split(':').map(Number);
-  const [endHours, endMinutes] = endTime.split(':').map(Number);
- 
-  let durationMinutes = (endHours * 60 + endMinutes) - (startHours * 60 + startMinutes);
-  if (durationMinutes < 0) durationMinutes += 24 * 60; // Handle overnight
- 
-  const hours = Math.floor(durationMinutes / 60);
-  const minutes = durationMinutes % 60;
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-};
+      const csvString = [
+        headers.join(','),
+        ...csvData.map(row => row.join(','))
+      ].join('\n');
 
-const handleAddTask = () => {
+      const blob = new Blob([csvString], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `tasks_export_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+    }
+  };
+
+  const calculateDuration = (startTime, endTime) => {
+    const [startHours, startMinutes] = startTime.split(':').map(Number);
+    const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+    let durationMinutes = (endHours * 60 + endMinutes) - (startHours * 60 + startMinutes);
+    if (durationMinutes < 0) durationMinutes += 24 * 60; // Handle overnight
+
+    const hours = Math.floor(durationMinutes / 60);
+    const minutes = durationMinutes % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  };
+
+  const handleAddTask = () => {
     if (newTask.title.trim() === '') return;
-   
+
     const task = {
       id: Date.now(),
       ...newTask,
       timeSpent: 0,
       created: new Date().toISOString(),
     };
-   
+
     setTasks([...tasks, task]);
     setNewTask({
       title: '',
@@ -222,7 +223,7 @@ const handleAddTask = () => {
 
   const handleSaveTime = () => {
     if (activeTask === null) return;
-   
+
     setTasks(tasks.map(task =>
       task.id === activeTask
         ? { ...task, timeSpent: timer }
@@ -259,13 +260,13 @@ const handleAddTask = () => {
               <Input
                 placeholder="Task Title"
                 value={newTask.title}
-                onChange={(e) => setNewTask({...newTask, title: e.target.value})}
+                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
                 className="w-full"
               />
               <Input
                 placeholder="Ticket/CR Number"
                 value={newTask.ticketNumber}
-                onChange={(e) => setNewTask({...newTask, ticketNumber: e.target.value})}
+                onChange={(e) => setNewTask({ ...newTask, ticketNumber: e.target.value })}
                 className="w-full"
               />
             </div>
@@ -281,11 +282,11 @@ const handleAddTask = () => {
                     {newTask.date ? formatDate(newTask.date) : "Select date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <CalendarComponent
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarPopup
                     mode="single"
                     selected={newTask.date}
-                    onSelect={(date) => setNewTask({...newTask, date})}
+                    onSelect={(date) => date && setNewTask({ ...newTask, date })}
                     initialFocus
                   />
                 </PopoverContent>
@@ -295,7 +296,7 @@ const handleAddTask = () => {
                 type="time"
                 placeholder="Start Time"
                 value={newTask.startTime}
-                onChange={(e) => setNewTask({...newTask, startTime: e.target.value})}
+                onChange={(e) => setNewTask({ ...newTask, startTime: e.target.value })}
                 className="w-full"
               />
 
@@ -303,22 +304,22 @@ const handleAddTask = () => {
                 type="time"
                 placeholder="End Time"
                 value={newTask.endTime}
-                onChange={(e) => setNewTask({...newTask, endTime: e.target.value})}
+                onChange={(e) => setNewTask({ ...newTask, endTime: e.target.value })}
                 className="w-full"
               />
 
               <Input
                 placeholder="Project/Initiative"
                 value={newTask.project}
-                onChange={(e) => setNewTask({...newTask, project: e.target.value})}
+                onChange={(e) => setNewTask({ ...newTask, project: e.target.value })}
                 className="w-full"
               />
             </div>
-           
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Select
                 value={newTask.category}
-                onValueChange={(value) => setNewTask({...newTask, category: value})}
+                onValueChange={(value) => setNewTask({ ...newTask, category: value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
@@ -334,7 +335,7 @@ const handleAddTask = () => {
 
               <Select
                 value={newTask.system}
-                onValueChange={(value) => setNewTask({...newTask, system: value})}
+                onValueChange={(value) => setNewTask({ ...newTask, system: value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select system" />
@@ -350,7 +351,7 @@ const handleAddTask = () => {
 
               <Select
                 value={newTask.taskType}
-                onValueChange={(value) => setNewTask({...newTask, taskType: value})}
+                onValueChange={(value) => setNewTask({ ...newTask, taskType: value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select task type" />
@@ -368,7 +369,7 @@ const handleAddTask = () => {
             <Textarea
               placeholder="Technical Description (Include: Changes, Impact, Testing Requirements)"
               value={newTask.description}
-              onChange={(e) => setNewTask({...newTask, description: e.target.value})}
+              onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
               className="w-full h-24"
             />
 
