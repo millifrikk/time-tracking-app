@@ -16,9 +16,10 @@
     "@vitejs/plugin-react": "^4.0.0",
     "class-variance-authority": "^0.6.1",
     "clsx": "^1.2.1",
-    "date-fns": "latest",
+    "date-fns": "^4.1.0",
     "lucide-react": "latest",
     "react": "^18.2.0",
+    "react-day-picker": "^9.5.1",
     "react-dom": "^18.2.0",
     "recharts": "latest",
     "tailwindcss-animate": "^1.0.7"
