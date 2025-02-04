@@ -132,8 +132,8 @@ const exportTasks = (format) => {
     category: categories[task.category],
     system: systems[task.system],
     taskType: taskTypes[task.taskType],
-    duration: task.endTime && task.startTime ? 
-      calculateDuration(task.startTime, task.endTime) : 
+    duration: task.endTime && task.startTime ?
+      calculateDuration(task.startTime, task.endTime) :
       formatTime(task.timeSpent)
   }));
 
@@ -160,12 +160,12 @@ const exportTasks = (format) => {
       task.ticketNumber,
       task.description.replace(/,/g, ';') // Replace commas in description to avoid CSV issues
     ]);
-    
+   
     const csvString = [
       headers.join(','),
       ...csvData.map(row => row.join(','))
     ].join('\n');
-    
+   
     const blob = new Blob([csvString], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -178,10 +178,10 @@ const exportTasks = (format) => {
 const calculateDuration = (startTime, endTime) => {
   const [startHours, startMinutes] = startTime.split(':').map(Number);
   const [endHours, endMinutes] = endTime.split(':').map(Number);
-  
+ 
   let durationMinutes = (endHours * 60 + endMinutes) - (startHours * 60 + startMinutes);
   if (durationMinutes < 0) durationMinutes += 24 * 60; // Handle overnight
-  
+ 
   const hours = Math.floor(durationMinutes / 60);
   const minutes = durationMinutes % 60;
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
@@ -189,14 +189,14 @@ const calculateDuration = (startTime, endTime) => {
 
 const handleAddTask = () => {
     if (newTask.title.trim() === '') return;
-    
+   
     const task = {
       id: Date.now(),
       ...newTask,
       timeSpent: 0,
       created: new Date().toISOString(),
     };
-    
+   
     setTasks([...tasks, task]);
     setNewTask({
       title: '',
@@ -222,9 +222,9 @@ const handleAddTask = () => {
 
   const handleSaveTime = () => {
     if (activeTask === null) return;
-    
-    setTasks(tasks.map(task => 
-      task.id === activeTask 
+   
+    setTasks(tasks.map(task =>
+      task.id === activeTask
         ? { ...task, timeSpent: timer }
         : task
     ));
@@ -314,7 +314,7 @@ const handleAddTask = () => {
                 className="w-full"
               />
             </div>
-            
+           
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Select
                 value={newTask.category}
