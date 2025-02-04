@@ -9,19 +9,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@radix-ui/react-dialog": "^1.0.4",
-    "@radix-ui/react-popover": "^1.0.6",
+    "@radix-ui/react-dialog": "^1.1.5",
+    "@radix-ui/react-popover": "^1.1.5",
     "@radix-ui/react-select": "^1.2.2",
-    "@radix-ui/react-slot": "^1.0.2",
-    "class-variance-authority": "^0.6.0",
+    "@radix-ui/react-slot": "^1.1.1",
+    "@vitejs/plugin-react": "^4.0.0",
+    "class-variance-authority": "^0.6.1",
     "clsx": "^1.2.1",
+    "date-fns": "latest",
     "lucide-react": "latest",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "recharts": "latest",
-    "date-fns": "latest",
-    "tailwindcss-animate": "^1.0.6",
-    "@vitejs/plugin-react": "^4.0.0"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
