@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, Plus, Save, Clock, Trash2, Filter, Calendar } from 'lucide-react';
+import { Play, Pause, Plus, Save, Clock, Trash2, Filter, Calendar, Settings } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -23,6 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import OptionsManager from './components/OptionsManager';
 
 const TimeTracker = () => {
   const [tasks, setTasks] = useState(() => {
@@ -37,6 +38,8 @@ const TimeTracker = () => {
   const [timer, setTimer] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isOptionsManagerOpen, setIsOptionsManagerOpen] = useState(false);
+  
   const [newTask, setNewTask] = useState({
     title: '',
     category: 'sap-ewm',
@@ -50,38 +53,47 @@ const TimeTracker = () => {
     endTime: '',
   });
 
-  const categories = {
-    'sap-ewm': 'SAP EWM Implementation & Support',
-    'sap-integration': 'SAP Integration Services',
-    'change-management': 'Change Request Management',
-    'retrofit': 'Retrofit Tasks',
-    'softconfig': 'Softconfig Development',
-    'vba-dev': 'VBA Development',
-    'power-platform': 'Power Platform Development',
-    'ms-dynamics': 'MS Dynamics 365',
-    'documentation': 'Technical Documentation',
-    'testing': 'Testing & Validation'
-  };
+  const [categories, setCategories] = useState(() => {
+    const savedCategories = localStorage.getItem('categories');
+    return savedCategories ? JSON.parse(savedCategories) : {
+      'sap-ewm': 'SAP EWM Implementation & Support',
+      'sap-integration': 'SAP Integration Services',
+      'change-management': 'Change Request Management',
+      'retrofit': 'Retrofit Tasks',
+      'softconfig': 'Softconfig Development',
+      'vba-dev': 'VBA Development',
+      'power-platform': 'Power Platform Development',
+      'ms-dynamics': 'MS Dynamics 365',
+      'documentation': 'Technical Documentation',
+      'testing': 'Testing & Validation'
+    };
+  });
 
-  const systems = {
-    'dev': 'Development',
-    'qa': 'Quality Assurance',
-    'uat': 'User Acceptance',
-    'prod': 'Production',
-    'sandbox': 'Sandbox'
-  };
+  const [systems, setSystems] = useState(() => {
+    const savedSystems = localStorage.getItem('systems');
+    return savedSystems ? JSON.parse(savedSystems) : {
+      'dev': 'Development',
+      'qa': 'Quality Assurance',
+      'uat': 'User Acceptance',
+      'prod': 'Production',
+      'sandbox': 'Sandbox'
+    };
+  });
 
-  const taskTypes = {
-    'implementation': 'New Implementation',
-    'support': 'Support & Maintenance',
-    'enhancement': 'Enhancement',
-    'bug-fix': 'Bug Fix',
-    'consultation': 'Consultation',
-    'training': 'Training & Knowledge Transfer',
-    'documentation': 'Documentation',
-    'testing': 'Testing',
-    'deployment': 'Deployment'
-  };
+  const [taskTypes, setTaskTypes] = useState(() => {
+    const savedTaskTypes = localStorage.getItem('taskTypes');
+    return savedTaskTypes ? JSON.parse(savedTaskTypes) : {
+      'implementation': 'New Implementation',
+      'support': 'Support & Maintenance',
+      'enhancement': 'Enhancement',
+      'bug-fix': 'Bug Fix',
+      'consultation': 'Consultation',
+      'training': 'Training & Knowledge Transfer',
+      'documentation': 'Documentation',
+      'testing': 'Testing',
+      'deployment': 'Deployment'
+    };
+  });
 
   useEffect(() => {
     let interval;
@@ -96,6 +108,18 @@ const TimeTracker = () => {
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }, [tasks]);
+
+  useEffect(() => {
+    localStorage.setItem('categories', JSON.stringify(categories));
+  }, [categories]);
+
+  useEffect(() => {
+    localStorage.setItem('systems', JSON.stringify(systems));
+  }, [systems]);
+
+  useEffect(() => {
+    localStorage.setItem('taskTypes', JSON.stringify(taskTypes));
+  }, [taskTypes]);
 
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
@@ -232,12 +256,29 @@ const TimeTracker = () => {
     ));
   };
 
+  const handleSaveOptions = (options) => {
+    setCategories(options.categories);
+    setSystems(options.systems);
+    setTaskTypes(options.taskTypes);
+  };
+
   return (
     <div className="p-4 max-w-4xl mx-auto bg-gray-100 min-h-screen">
       <Card className="mb-6 bg-white shadow-lg">
         <CardHeader>
-          <CardTitle>IT Consulting Time Tracker</CardTitle>
-          <CardDescription>SAP & Microsoft Technology Solutions</CardDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>IT Consulting Time Tracker</CardTitle>
+              <CardDescription>SAP & Microsoft Technology Solutions</CardDescription>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsOptionsManagerOpen(true)}
+            >
+              <Settings className="h-4 w-4 mr-2" /> Manage Options
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex justify-end space-x-2 mb-4">
@@ -441,6 +482,16 @@ const TimeTracker = () => {
           </Card>
         ))}
       </div>
+
+      {isOptionsManagerOpen && (
+        <OptionsManager
+          onClose={() => setIsOptionsManagerOpen(false)}
+          initialCategories={categories}
+          initialSystems={systems}
+          initialTaskTypes={taskTypes}
+          onSave={handleSaveOptions}
+        />
+      )}
     </div>
   );
 };
